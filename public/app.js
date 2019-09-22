@@ -1,5 +1,7 @@
 'use strict';
-var learnjs = {};
+var learnjs = {
+    poolId:'ap-northeast-1:ee7f14e0-98b6-4423-83f9-2f69828db446'
+};
 
 learnjs.problems = [
     {
@@ -12,6 +14,9 @@ learnjs.problems = [
     }
 ];
 
+learnjs.landingView = function () {
+    return learnjs.template('landing-view');
+};
 // 引数：data（int:表示するプログラム番号）
 learnjs.problemView = function (data) {
 
@@ -60,16 +65,34 @@ learnjs.problemView = function (data) {
 
     // 問題の書き換え
     learnjs.applyObject(problemData, view);
+
+    // skipボタンの表示非表示
+    if (problemNumber < learnjs.problems.length) {
+        // ボタンを取得
+        var buttonItem = learnjs.template('skip-btn');
+        // 
+        buttonItem.find('a').attr('href', '#problem-' + (problemNumber + 1));
+        $('.nav-list').append(buttonItem);
+        view.bind('removingView', function () {
+            buttonItem.remove();
+        });
+    }
+
     return view;
 };
 
 learnjs.showView = function (hash) {
     var routes = {
-        '#problem': learnjs.problemView
+        '#problem': learnjs.problemView,
+        'profile': learnjs.profileView,
+        '#': learnjs.landingView,
+        '': learnjs.landingView
     };
     var hasgParts = hash.split('-');
     var viewFn = routes[hasgParts[0]];
     if (viewFn) {
+        // 消されそうであることをViewに伝える
+        learnjs.triggerEvent('removingView', []);
         $('.view-container').empty().append(viewFn(hasgParts[1]));
     }
 };
@@ -83,6 +106,7 @@ learnjs.appOnReady = function () {
         learnjs.showView(window.location.hash);
     };
     learnjs.showView(window.location.hash);
+    learnjs.identity.done(learnjs.addProfileLink);
 
 };
 
@@ -121,5 +145,76 @@ learnjs.buildCorrectFlash = function (problemNum) {
         link.text("You're Finished!");
     }
     return correctFlash;
+};
+
+
+
+learnjs.triggerEvent = function (name, args) {
+    $('.view-container>*').trigger(name, args);
+};
+
+learnjs.awsRefresh = function () {
+    var deferred = new $.Deferred();
+    AWS.config.credentials.refresh(function (err) {
+        if (err) {
+            deferred.reject(err);
+        } else {
+            deferred.resolve(AWS.config.credentials.identityId);
+        }
+    });
+};
+
+function googleSignIn(googleUser) {
+    console.log(arguments);
+    var id_token = googleUser.getAuthResponse().id_token;
+    console.log(id_token);
+
+    AWS.config.update({
+        region: 'ap-northeast-1',
+        credentials: new AWS.CognitoIdentityCredentials({
+            IdentityPoolId: learnjs.poolId,
+            Logins: {
+                'accounts.google.com': id_token
+            }
+        })
+    });
+
+    learnjs.awsRefresh().then(function (id) {
+        learnjs.identity.resolve({
+            id: id,
+            email: googleUser.getBasicProfile().getEmail(),
+            refresh: refresh
+        });
+    });
+
+    function refresh() {
+        return gapi.auth2.getAuthInstance().signIn({
+            prompt: 'login'
+        }).then(function (userUpdate) {
+            var creds = AWS.config.credentials;
+            var newToken = userUpdate.getAuthResponse().id_token;
+            creds.params.Logins['accounts.google.com'] = newToken;
+            return learnjs.awsRefresh();
+        });
+    }
 }
 
+// 4.4.3 アイデンティティDeferredを作成
+learnjs.identity = new $.Deferred();
+
+
+// 4.5 プロファイルビューを作成する
+learnjs.profileView = function () {
+    var view = learnjs.template('profile-view');
+    learnjs.identity.done(function (identity) {
+        view.find('.email').text(identity.email);
+    });
+    return view;
+};
+
+learnjs.addProfileLink = function (profile) {
+    var link = learnjs.template('profile-link');
+    link.find('a').text(profile.email);
+    $('.signin-bar').prepend(link);
+
+};

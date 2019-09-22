@@ -60,7 +60,7 @@ describe('LearnJS', function () {
             // ìöÇ¶çáÇÌÇπ
             view.find('.check-btn').click();
             // ê≥âÇ≈Ç†ÇÈÇ±Ç∆
-            expect(view.find('.result').text()).toEqual('Correct!');
+            expect(view.find('.result span').text()).toEqual('Correct!');
         });
 
         it('rejects an incorrect answer', function () {

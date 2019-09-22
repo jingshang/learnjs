@@ -2,11 +2,13 @@
 <html>
 <head>
     <meta charset='utf-8'>
+    <meta name="google-signin-client_id" content="949178079759-ut644k2u187tm7gc8dftdua4q60febud.apps.googleusercontent.com" />
     <title>Learn JS!</title>
     <link href='//fonts.googleapis.com/css?family=Raleway:400,300,600' rel='stylesheet' type='text/css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/normalize/3.0.2/normalize.min.css'>
     <link rel='stylesheet' href='https://cdnjs.cloudflare.com/ajax/libs/skeleton/2.0.4/skeleton.min.css'>
     <script src='https://code.jquery.com/jquery-2.1.4.min.js'></script>
+    <script src="https://apis.google.com/js/platform.js" async defer></script>
     <script src='/vendor.js'></script>
     <script src='/app.js'></script>
     <style type="text/css" media="all">
@@ -16,12 +18,71 @@
         .templates {
             display: none;
         }
+        .inline-list{
+            margin-bottom:0px;
+        }
+        .inline-list li{
+            display:inline;
+            margin: 0 20px 0 0;
+        }
+        .fixed-top{
+            position:fixed;
+            top:0px;
+            z-index:1024;
+        }
+        .no-select{
+            user-select:none;
+            -webkit-user-select:none;
+            -ms-user-select:none;
+            -moz-user-select:none;
+        }
+        .hover-links a{text-decoration:none;}
+        .hover-links a:hover{text-decoration:underline;}
+        .nav-container{
+            padding-left:40px;
+            background:#666;
+        }
+        .nav-container a{
+            color:white;
+        }
+        .navbar-padding{
+            padding-top:7px;
+            display:inline-block;
+        }
     </style>
 </head>
 <body>
     <div class="markup">
+
+        <!--　メニュー　-->
+        <div class="nav-container no-select fixed-top u-full-width">
+            <ul class="inline-list hover-links nav-list six columns">
+                <li><a class="text-lg" href="#">LearnJS</a></li>
+                <li><a href="#problem-1">Start</a></li>
+            </ul>
+            <!-- google login from  -->
+            <div class="four columns signin-bar">
+                <span class="navbar-padding u-pull-right">
+                    <span class="g-signin2" data-onsuccess="googleSignIn"></span>
+                </span>
+            </div>
+        </div>
+             
         <!-- Viewコンテナ（この中がルート（app.js）のよろい書き換えられる） -->
         <div class='view-container container'>
+        </div>
+
+        <!-- template -->
+        <!-- template -->
+        <!-- template -->
+        <div class="templates">
+            <!-- スキップボタンのtemplate -->
+            <ul>
+                <li class="skip-btn"><a>Skip This Problem</a></li>
+            </ul>
+
+            
+            <!-- トップのtemplate -->
             <div class="landing-view">
                 <div class="row">
                     <div class="one-half column">
@@ -33,11 +94,9 @@
                     </div>
                 </div>
             </div>
-        </div>
 
-        <!-- template -->
-        <div class="templates">
 
+            <!-- 問題画面のtemplate -->
             <div class="problem-view">
                 <h3 class="title"></h3>
                 <p data-name="description"></p>
@@ -51,9 +110,22 @@
                     </div>
                 </form>
             </div>
+
             <div class="correct-flash">
                 <span>Correct!</span><a>Next Problem</a>
             </div>
+
+            <!-- ユーザー情報template -->
+            <div class="profile-view">
+                <h3>Your Profile</h3>
+                <div class="email"></div>
+            </div>
+
+            <!-- ユーザー情報リンクのtemplate -->
+            <div class="profile-link navbar-padding-lg">
+                <a href="#profile"></a>
+            </div>
+
         </div>
     </div>
     <script type="text/javascript">
